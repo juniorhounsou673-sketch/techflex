@@ -18,6 +18,13 @@ class ProductMedia extends Model
 
     public function url(): string
     {
+        // Les photos de démonstration sont des URL distantes : elles survivent
+        // aux redéploiements, contrairement aux fichiers uploadés dans storage/.
+        if (str_starts_with((string) $this->path, 'http://')
+            || str_starts_with((string) $this->path, 'https://')) {
+            return $this->path;
+        }
+
         return asset('storage/' . $this->path);
     }
 
