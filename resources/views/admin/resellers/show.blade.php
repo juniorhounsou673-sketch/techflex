@@ -15,6 +15,17 @@
             @if($reseller->isBlocked())<span class="badge badge-red">Bloqué</span>@else<span class="badge badge-green">Actif</span>@endif
         </div>
 
+        @if(! $reseller->user->password_set_at)
+            <div class="notice">
+                <strong>Invitation en attente.</strong>
+                {{ $reseller->user->email }} n'a pas encore défini son mot de passe.
+                <form method="POST" action="{{ route('admin.resellers.invitation.resend', $reseller) }}" class="inline-form">
+                    @csrf
+                    <button type="submit" class="btn btn-small">Renvoyer l'email d'invitation</button>
+                </form>
+            </div>
+        @endif
+
         {{-- Solde --}}
         <div class="panel">
             <h2 class="panel-title">Solde</h2>

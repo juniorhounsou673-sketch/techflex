@@ -43,8 +43,22 @@
                                 <span class="badge badge-green">Actif</span>
                             @endif
                         </td>
-                        <td>{{ $r->balanceText() }}<br><a href="{{ route('admin.resellers.show', $r) }}" class="small">Voir le compte</a></td>
                         <td>
+                            {{ $r->balanceText() }}<br>
+                            @if($r->user->password_set_at)
+                                <span class="badge badge-green">Accès activé</span>
+                            @else
+                                <span class="badge">Invitation en attente</span>
+                            @endif
+                            <br><a href="{{ route('admin.resellers.show', $r) }}" class="small">Voir le compte</a>
+                        </td>
+                        <td>
+                            @if(! $r->user->password_set_at)
+                                <form method="POST" action="{{ route('admin.resellers.invitation.resend', $r) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-small">Renvoyer l'invitation</button>
+                                </form>
+                            @endif
                             @if($r->isBlocked())
                                 <form method="POST" action="{{ route('admin.resellers.unblock', $r) }}">
                                     @csrf

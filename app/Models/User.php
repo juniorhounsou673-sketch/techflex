@@ -21,6 +21,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'blocked_at' => 'datetime',
+            'invitation_expires_at' => 'datetime',
+            'password_set_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -33,4 +35,10 @@ class User extends Authenticatable
     public function isAdmin(): bool     { return $this->role === 'admin'; }
     public function isReseller(): bool  { return $this->role === 'revendeur'; }
     public function isBlocked(): bool   { return $this->status === 'bloque'; }
+
+    /** Invitation envoyée mais mot de passe pas encore choisi par le revendeur. */
+    public function needsPasswordSetup(): bool
+    {
+        return $this->isReseller() && is_null($this->password_set_at);
+    }
 }

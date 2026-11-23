@@ -11,6 +11,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ResellerInvitationController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\Reseller\DashboardController as ResellerDashboardController;
 use Illuminate\Support\Facades\Route;
@@ -41,6 +42,10 @@ Route::prefix('commande/{reference}')->name('order.')->group(function () {
     Route::get('/livraison', [OrderController::class, 'deliveryForm'])->name('delivery');
     Route::post('/livraison', [OrderController::class, 'deliveryStore'])->name('delivery.store');
 });
+
+// Invitation revendeur : le revendeur choisit lui-même son mot de passe
+Route::get('/invitation/{token}', [ResellerInvitationController::class, 'show'])->name('reseller.invitation.show');
+Route::post('/invitation/{token}', [ResellerInvitationController::class, 'store'])->name('reseller.invitation.store');
 
 // Avis clients
 Route::get('/avis', [ReviewController::class, 'index'])->name('reviews');
@@ -80,6 +85,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/revendeurs/creer', [AdminResellerController::class, 'create'])->name('resellers.create');
     Route::post('/revendeurs', [AdminResellerController::class, 'store'])->name('resellers.store');
     Route::get('/revendeurs/{reseller}', [AdminResellerController::class, 'show'])->name('resellers.show');
+    Route::post('/revendeurs/{reseller}/invitation', [AdminResellerController::class, 'resendInvitation'])->name('resellers.invitation.resend');
     Route::post('/revendeurs/{reseller}/versements', [AdminResellerController::class, 'settle'])->name('resellers.settle');
     Route::post('/versements/{settlement}/supprimer', [AdminResellerController::class, 'settlementDestroy'])->name('settlements.destroy');
     Route::post('/revendeurs/{reseller}/bloquer', [AdminResellerController::class, 'block'])->name('resellers.block');

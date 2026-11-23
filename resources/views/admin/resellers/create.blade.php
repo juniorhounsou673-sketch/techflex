@@ -9,7 +9,7 @@
 
         <div class="panel panel-narrow">
             <h1>Donner accès à un revendeur</h1>
-            <p class="muted small">Son gain sur chaque produit se règle dans la page du produit.</p>
+            <p class="muted small">Un email d'invitation sera envoyé au revendeur : c'est lui qui choisira son mot de passe en cliquant sur le lien. Son gain sur chaque produit se règle dans la page du produit.</p>
 
             <form method="POST" action="{{ route('admin.resellers.store') }}" class="form">
                 @csrf
@@ -28,10 +28,7 @@
                 <label>Code revendeur (laissez vide pour un code automatique)
                     <input type="text" name="code" value="{{ old('code') }}" placeholder="REV003">
                 </label>
-                <label>Mot de passe (8 caractères minimum)
-                    <input type="text" name="password" value="{{ old('password') }}" required>
-                </label>
-                <button type="submit" class="btn">Créer le compte</button>
+                <button type="submit" class="btn">Envoyer l'invitation</button>
             </form>
         </div>
     </div>

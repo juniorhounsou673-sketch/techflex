@@ -45,8 +45,17 @@ n'est utilisée.
 1. Ouvre https://techflex-boutique.onrender.com/connexion
 2. Connecte-toi avec `TECHFLEX_ADMIN_EMAIL` / `TECHFLEX_ADMIN_PASSWORD`.
 3. Va dans **Revendeurs → Donner accès à un revendeur**.
-4. Chaque revendeur reçoit son lien `/r/CODE` et peut se connecter avec l'email
-   et le mot de passe définis à la création.
+4. Renseigne le nom, l'email, le téléphone, le numéro MoMo et éventuellement le code.
+   **Vous ne définissez aucun mot de passe**.
+5. Un email d'invitation est envoyé au revendeur. En cliquant sur le bouton, il
+   arrive sur une page où il choisit **lui-même** son mot de passe, puis est
+   connecté directement à son espace `/revendeur`.
+6. Le lien `/r/CODE` affiché dans la liste des revendeurs est son lien de vente
+   client. Si l'email n'arrive pas, cliquez sur **Renvoyer l'invitation**.
+
+Le lien d'invitation expire après 7 jours et devient invalide dès que le mot de
+passe est défini. Tant que l'invitation n'est pas acceptée, le revendeur ne peut
+pas se connecter.
 
 Les données saisies restent dans PostgreSQL : elles survivent aux redéploiements.
 Le catalogue de départ n'est jamais réinitialisé (`firstOrCreate` dans le seeder).
@@ -63,6 +72,10 @@ Le catalogue de départ n'est jamais réinitialisé (`firstOrCreate` dans le see
 - `TECHFLEX_MOMO_SIMULATION=true` : aucun paiement réel n'est effectué tant que
   l'API MoMo n'est pas branchée. Le mode simulé n'est jamais proposé en ligne.
 - `SESSION_SECURE_COOKIE=true` : cookie transmis uniquement en HTTPS.
+- **Emails d'invitation** : en production, `MAIL_MAILER` doit être `smtp` (ou
+  `resend`) avec les identifiants du compte d'envoi (`MAIL_HOST`, `MAIL_PORT`,
+  `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`). Avec `log`, les emails
+  ne sont qu'écrits dans les logs Render et ne parviennent jamais au revendeur.
 
 ## Bon à savoir
 

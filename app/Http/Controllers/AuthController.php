@@ -26,13 +26,24 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        // Invitation pas encore acceptée : le revendeur doit d'abord choisir son mot de passe.
+        if ($user->needsPasswordSetup()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')
+                ->withErrors(['email' => "Votre accès n'est pas encore activé. Ouvrez le lien d'invitation reçu par email pour définir votre mot de passe."])
+                ->onlyInput('email');
+        }
+
         // Compte bloqué : connexion refusée
         if ($user->isBlocked()) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return back()
+            return redirect()->route('login')
                 ->withErrors(['email' => 'Votre compte a été bloqué. Contactez TECHFLEX.'])
                 ->onlyInput('email');
         }

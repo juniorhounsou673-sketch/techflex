@@ -608,6 +608,7 @@ TECHFLEX',
                 'name' => $name,
                 'phone' => $momo,
                 'password' => Hash::make('password'),
+                'password_set_at' => now(),
                 'role' => 'revendeur',
                 'status' => 'actif',
             ]);
@@ -626,6 +627,7 @@ TECHFLEX',
                 'name' => 'TECHFLEX Admin',
                 'phone' => '22900000000',
                 'password' => Hash::make('password'),
+                'password_set_at' => now(),
                 'role' => 'admin',
                 'status' => 'actif',
             ]);
@@ -648,6 +650,7 @@ TECHFLEX',
         $user->phone = env('TECHFLEX_DELIVERY_PHONE', '22900000000');
         $user->role = 'admin';
         $user->status = 'actif';
+        $user->password_set_at = $user->password_set_at ?: now();
 
         if (! $user->exists || ! $user->password || ! Hash::check($password, $user->password)) {
             $user->password = Hash::make($password);

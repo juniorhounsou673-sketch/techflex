@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Reseller;
 use App\Models\ResellerSettlement;
 use App\Models\User;
+use App\Notifications\ResellerInvitation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Throwable;
 
 class ResellerController extends Controller
 {
@@ -35,7 +38,6 @@ class ResellerController extends Controller
             'phone' => 'nullable|string|max:20|unique:users,phone',
             'momo_number' => 'required|string|max:20',
             'code' => 'nullable|alpha_dash|max:20|unique:resellers,code',
-            'password' => 'required|string|min:8',
         ]);
 
         $reseller = DB::transaction(function () use ($data) {
@@ -43,9 +45,11 @@ class ResellerController extends Controller
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'phone' => $data['phone'] ?? null,
-                'password' => $data['password'],   // haché automatiquement (cast "hashed")
+                // Mot de passe inconnu de tous : le revendeur choisira le sien via l'email.
+                'password' => Str::password(32),
                 'role' => 'revendeur',
                 'status' => 'actif',
+                'password_set_at' => null,
             ]);
 
             return Reseller::create([
@@ -56,8 +60,59 @@ class ResellerController extends Controller
             ]);
         });
 
+        $sent = $this->sendInvitation($reseller->user);
+        $message = "Accès créé pour {$reseller->user->name}. ";
+        $message .= $sent
+            ? "Un email d'invitation lui a été envoyé pour définir son mot de passe. Lien de vente : " . url('/r/' . $reseller->code)
+            : "L'email d'invitation n'a pas pu être envoyé. Vérifiez la configuration mail puis cliquez sur « Renvoyer l'invitation ».";
+
         return redirect()->route('admin.resellers.index')
-            ->with('success', "Accès donné à {$reseller->user->name}. Lien de vente : " . url('/r/' . $reseller->code));
+            ->with($sent ? 'success' : 'error', $message);
+    }
+
+    /** Renvoyer l'email d'invitation (lien perdu, email non reçu...). */
+    public function resendInvitation(Reseller $reseller)
+    {
+        $user = $reseller->user;
+
+        if (! $user->isReseller()) {
+            abort(404);
+        }
+
+        if ($user->password_set_at) {
+            return back()->with('error', "{$user->name} a déjà défini son mot de passe.");
+        }
+
+        $sent = $this->sendInvitation($user);
+
+        return back()->with(
+            $sent ? 'success' : 'error',
+            $sent
+                ? "Nouvelle invitation envoyée à {$user->email}."
+                : "Envoi impossible : vérifiez la configuration mail de TECHFLEX."
+        );
+    }
+
+    private function sendInvitation(User $user): bool
+    {
+        $token = Str::random(64);
+        $days = (int) config('techflex.invitation_ttl_days', 7);
+
+        $user->forceFill([
+            'invitation_token' => hash('sha256', $token),
+            'invitation_expires_at' => now()->addDays($days),
+            'password_set_at' => null,
+        ])->save();
+
+        try {
+            $user->notify(new ResellerInvitation(route('reseller.invitation.show', $token), $days));
+
+            return true;
+        } catch (Throwable $e) {
+            report($e);
+
+            return false;
+        }
     }
 
     public function block(Request $request, Reseller $reseller)

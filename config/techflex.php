@@ -11,4 +11,7 @@ return [
     // true = paiement MoMo « sur le site » simulé (aucun argent réel).
     // Tant que c'est true, ce mode n'est proposé qu'en local (APP_ENV=local), jamais en ligne.
     'momo_simulation' => env('TECHFLEX_MOMO_SIMULATION', true),
+
+    // Durée de validité du lien d'invitation envoyé au revendeur.
+    'invitation_ttl_days' => 7,
 ];
