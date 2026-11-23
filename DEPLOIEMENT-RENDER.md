@@ -18,6 +18,11 @@ Le service est déployé depuis le dépôt :
 > ⚠️ L'offre PostgreSQL gratuite de Render expire après environ **30 jours**.
 > Pour une mise en ligne définitive, prévoir un plan payant ou une base externe.
 
+> ⚠️ **Configuration transitoire en cours** : `APP_KEY` est encore dans le dépôt
+> et le compte administrateur de démonstration (`admin@techflex.test` /
+> `password`) reste actif tant que les secrets Render ne sont pas posés.
+> Les photos et le catalogue sont déjà ceux du site localhost.
+
 ## Première configuration
 
 1. Ouvre https://render.com/deploy?repo=https://github.com/juniorhounsou673-sketch/techflex

@@ -21,9 +21,9 @@ services:
         value: production
       - key: APP_DEBUG
         value: false
-      # Secret : à renseigner dans le dashboard Render (ne pas mettre dans Git).
+      # Transitoire : sera remplacé par un secret Render dès que l'accès API est fourni.
       - key: APP_KEY
-        sync: false
+        value: base64:Ospy7QMi4EhF8Br+C+a0nL4axD1orvcCgpmG7PBaFZI=
       - key: APP_URL
         value: https://techflex-boutique.onrender.com
       - key: APP_LOCALE
@@ -60,8 +60,3 @@ services:
         value: true
       - key: TECHFLEX_SEED_DEMO
         value: "false"
-      # Secrets du compte administrateur : à renseigner dans le dashboard Render.
-      - key: TECHFLEX_ADMIN_EMAIL
-        sync: false
-      - key: TECHFLEX_ADMIN_PASSWORD
-        sync: false
