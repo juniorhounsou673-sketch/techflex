@@ -72,10 +72,15 @@ Le catalogue de départ n'est jamais réinitialisé (`firstOrCreate` dans le see
 - `TECHFLEX_MOMO_SIMULATION=true` : aucun paiement réel n'est effectué tant que
   l'API MoMo n'est pas branchée. Le mode simulé n'est jamais proposé en ligne.
 - `SESSION_SECURE_COOKIE=true` : cookie transmis uniquement en HTTPS.
-- **Emails d'invitation** : en production, `MAIL_MAILER` doit être `smtp` (ou
-  `resend`) avec les identifiants du compte d'envoi (`MAIL_HOST`, `MAIL_PORT`,
-  `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`). Avec `log`, les emails
-  ne sont qu'écrits dans les logs Render et ne parviennent jamais au revendeur.
+- **Emails d'invitation** : la production utilise **Brevo SMTP** :
+  `MAIL_MAILER=smtp`, `MAIL_HOST=smtp-relay.brevo.com`, `MAIL_PORT=587`,
+  `MAIL_SCHEME=smtp`, `MAIL_USERNAME=c4cd69001@smtp-brevo.com`,
+  `MAIL_FROM_ADDRESS=techflex79@gmail.com`, `MAIL_FROM_NAME=TECHFLEX`.
+  `MAIL_PASSWORD` est la clé SMTP Brevo (`xsmtpsib-...`) stockée comme secret
+  Render, jamais dans Git. L'adresse d'expéditeur doit être vérifiée dans
+  Brevo → Senders.
+  Avec `log`, les emails ne sont qu'écrits dans les logs et ne parviennent jamais
+  au revendeur.
 
 ## Bon à savoir
 
