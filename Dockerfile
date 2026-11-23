@@ -44,7 +44,8 @@ EXPOSE 8080
 
 # Au démarrage : adapte l'URL publique, prépare la base SQLite, charge les
 # données de démonstration une seule fois, puis lance le serveur sur $PORT.
-CMD export APP_URL="${RENDER_EXTERNAL_URL:-http://localhost}" && \
+CMD APP_URL="$(echo "${RENDER_EXTERNAL_URL:-https://techflex-boutique.onrender.com}" | sed 's#^http://#https://#')" && \
+    export APP_URL && \
     touch database/database.sqlite && \
     php artisan migrate --force && \
     (php artisan db:seed --force || true) && \
