@@ -23,7 +23,7 @@ class TechflexBoutiqueTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertSee('Accessoires Apple')
-            ->assertSee('AirPods Pro 2')
+            ->assertSee('AirPods Pro 3')
             ->assertSee('Montres de luxe');
     }
 
@@ -50,7 +50,7 @@ class TechflexBoutiqueTest extends TestCase
 
     public function test_checkout_creates_an_order_and_reserves_stock(): void
     {
-        $product = Product::where('name', 'AirPods Pro 2')->firstOrFail();
+        $product = Product::where('name', 'AirPods Pro 3')->firstOrFail();
         $stockBefore = $product->stock;
 
         $this->post(route('cart.add', $product), ['quantity' => 1])->assertRedirect(route('cart'));

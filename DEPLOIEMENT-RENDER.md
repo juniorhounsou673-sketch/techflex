@@ -29,9 +29,11 @@ Le service est déployé depuis le dépôt :
 4. Clique sur **Apply**.
 
 Render construit l'image Docker, crée la base PostgreSQL, lance les migrations,
-puis le seeder idempotent. Le seeder crée les catégories, un catalogue de départ
-et **uniquement le compte administrateur** : aucun revendeur de test n'est créé
-en production (`TECHFLEX_SEED_DEMO=false`).
+puis le seeder idempotent. Le seeder restaure **le catalogue et les photos
+d'origine de TECHFLEX** (fichiers de `storage/app/public/products`, versionnés
+dans Git) et **uniquement le compte administrateur** : aucun revendeur de test
+n'est créé en production (`TECHFLEX_SEED_DEMO=false`). Aucune image Unsplash
+n'est utilisée.
 
 ## Ajouter vos revendeurs
 
