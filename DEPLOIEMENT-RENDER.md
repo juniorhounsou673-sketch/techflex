@@ -86,6 +86,11 @@ Le catalogue de départ n'est jamais réinitialisé (`firstOrCreate` dans le see
 
 - Le plan gratuit met le service en veille après ~15 min d'inactivité : la
   première requête peut prendre 50 secondes.
+- L'email d'invitation est **mis en file d'attente** (`QUEUE_CONNECTION=database`)
+  et envoyé par un worker `php artisan queue:work` démarré par le `Dockerfile`.
+  Ainsi, créer un revendeur ne bloque jamais sur le serveur SMTP et ne déclenche
+  pas de 502. En cas de problème d'envoi, la tâche est retentée 3 fois, puis
+  visible dans la table `jobs` / les logs Render.
 - En cas d'erreur 500, consulte **Logs** dans le dashboard Render, puis
   **Manual Deploy → Deploy latest commit**.
 - Le dépôt GitHub doit rester **privé** : il contient la configuration du site
