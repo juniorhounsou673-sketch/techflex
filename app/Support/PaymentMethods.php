@@ -28,7 +28,7 @@ class PaymentMethods
         $methods = [];
 
         // Paiement simulé : jamais proposé en ligne (sinon n'importe qui « paierait » gratuitement)
-        if (! config('techflex.momo_simulation') || app()->environment('local')) {
+        if (! config('techflex.momo_simulation') || app()->environment(['local', 'testing'])) {
             $methods[] = 'momo_site';
         }
 
