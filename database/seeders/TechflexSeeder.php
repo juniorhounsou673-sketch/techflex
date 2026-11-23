@@ -9,26 +9,19 @@ use App\Models\Reseller;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use RuntimeException;
 
 class TechflexSeeder extends Seeder
 {
     public function run(): void
     {
-        // Admin (vous)
-        User::updateOrCreate(['email' => 'admin@techflex.test'], [
-            'name' => 'TECHFLEX Admin',
-            'phone' => '22900000000',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-        ]);
+        $this->seedAdmin();
 
-        // Catégories
-        $apple = Category::updateOrCreate(['slug' => 'accessoires-apple'], ['name' => 'Accessoires Apple']);
-        $watches = Category::updateOrCreate(['slug' => 'montres-de-luxe'], ['name' => 'Montres de luxe']);
+        $apple = Category::firstOrCreate(['slug' => 'accessoires-apple'], ['name' => 'Accessoires Apple']);
+        $watches = Category::firstOrCreate(['slug' => 'montres-de-luxe'], ['name' => 'Montres de luxe']);
 
-        // Produits : prix client (FCFA), gain du revendeur = 10 % de départ.
-        // Les photos sont des URL distantes : elles restent visibles après chaque
-        // redéploiement, contrairement aux fichiers uploadés dans storage/.
+        // Le catalogue sert de point de départ. firstOrCreate évite de réinitialiser
+        // les prix, le stock ou les médias modifiés depuis l'administration.
         $catalogue = [
             [$apple->id,   'AirPods Pro 2',       'Apple',  'Écouteurs à réduction de bruit active', 5, 130000,   'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=800'],
             [$apple->id,   'Chargeur MagSafe',    'Apple',  'Chargeur sans fil MagSafe',            20, 28000,    'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=800'],
@@ -40,7 +33,7 @@ class TechflexSeeder extends Seeder
         ];
 
         foreach ($catalogue as [$cat, $name, $brand, $desc, $stock, $prix, $photo]) {
-            $product = Product::updateOrCreate(['name' => $name], [
+            $product = Product::firstOrCreate(['name' => $name], [
                 'category_id' => $cat,
                 'brand' => $brand,
                 'description' => $desc,
@@ -55,7 +48,11 @@ class TechflexSeeder extends Seeder
             );
         }
 
-        // Deux revendeurs de test
+        // Les revendeurs de test n'existent jamais sur le site en ligne.
+        if (! $this->seedDemoResellers()) {
+            return;
+        }
+
         foreach ([
             ['Revendeur Un',   'revendeur1@techflex.test', '22911111111', 'REV001'],
             ['Revendeur Deux', 'revendeur2@techflex.test', '22922222222', 'REV002'],
@@ -65,6 +62,7 @@ class TechflexSeeder extends Seeder
                 'phone' => $momo,
                 'password' => Hash::make('password'),
                 'role' => 'revendeur',
+                'status' => 'actif',
             ]);
 
             Reseller::updateOrCreate(['user_id' => $user->id], [
@@ -72,5 +70,48 @@ class TechflexSeeder extends Seeder
                 'momo_number' => $momo,
             ]);
         }
+    }
+
+    private function seedAdmin(): void
+    {
+        if (! app()->environment('production')) {
+            User::updateOrCreate(['email' => 'admin@techflex.test'], [
+                'name' => 'TECHFLEX Admin',
+                'phone' => '22900000000',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+                'status' => 'actif',
+            ]);
+
+            return;
+        }
+
+        $email = env('TECHFLEX_ADMIN_EMAIL');
+        $password = env('TECHFLEX_ADMIN_PASSWORD');
+
+        if (! $email || ! $password) {
+            throw new RuntimeException('TECHFLEX_ADMIN_EMAIL et TECHFLEX_ADMIN_PASSWORD doivent etre definis en production.');
+        }
+
+        $user = User::firstOrNew(['email' => $email]);
+        $user->name = 'TECHFLEX Admin';
+        $user->phone = env('TECHFLEX_DELIVERY_PHONE', '22900000000');
+        $user->role = 'admin';
+        $user->status = 'actif';
+
+        if (! $user->exists || ! $user->password || ! Hash::check($password, $user->password)) {
+            $user->password = Hash::make($password);
+        }
+
+        $user->save();
+    }
+
+    private function seedDemoResellers(): bool
+    {
+        if (! app()->environment('production')) {
+            return true;
+        }
+
+        return filter_var(env('TECHFLEX_SEED_DEMO', false), FILTER_VALIDATE_BOOLEAN);
     }
 }

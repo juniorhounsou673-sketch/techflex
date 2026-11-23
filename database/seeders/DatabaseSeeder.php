@@ -16,16 +16,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Compte présent dans le code d'origine : on le conserve.
-        if (! User::where('email', 'test@example.com')->exists()) {
-            User::create([
-                'name' => 'Test User',
-                'email' => 'test@example.com',
-                'password' => Hash::make('password'),
-            ]);
+        // Le compte historique n'existe que pour les environnements de développement.
+        if (! app()->environment('production')) {
+            if (! User::where('email', 'test@example.com')->exists()) {
+                User::create([
+                    'name' => 'Test User',
+                    'email' => 'test@example.com',
+                    'password' => Hash::make('password'),
+                ]);
+            }
         }
 
-        // Catalogue, administrateur et revendeurs de la boutique.
+        // Catalogue, administrateur et revendeurs de démonstration.
         $this->call(TechflexSeeder::class);
     }
 }

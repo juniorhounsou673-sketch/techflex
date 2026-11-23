@@ -1,3 +1,10 @@
+databases:
+  - name: techflex-db
+    databaseName: techflex
+    user: techflex
+    plan: free
+    region: frankfurt
+
 services:
   - type: web
     name: techflex-boutique
@@ -14,18 +21,25 @@ services:
         value: production
       - key: APP_DEBUG
         value: false
+      # Secret : à renseigner dans le dashboard Render (ne pas mettre dans Git).
       - key: APP_KEY
-        value: base64:Ospy7QMi4EhF8Br+C+a0nL4axD1orvcCgpmG7PBaFZI=
+        sync: false
       - key: APP_URL
         value: https://techflex-boutique.onrender.com
       - key: APP_LOCALE
         value: fr
       - key: APP_FALLBACK_LOCALE
         value: fr
+      - key: APP_TIMEZONE
+        value: Africa/Porto-Novo
       - key: BCRYPT_ROUNDS
         value: 12
       - key: DB_CONNECTION
-        value: sqlite
+        value: pgsql
+      - key: DATABASE_URL
+        fromDatabase:
+          name: techflex-db
+          property: connectionString
       - key: SESSION_DRIVER
         value: database
       - key: CACHE_STORE
@@ -44,3 +58,10 @@ services:
         value: "22900000000"
       - key: TECHFLEX_MOMO_SIMULATION
         value: true
+      - key: TECHFLEX_SEED_DEMO
+        value: "false"
+      # Secrets du compte administrateur : à renseigner dans le dashboard Render.
+      - key: TECHFLEX_ADMIN_EMAIL
+        sync: false
+      - key: TECHFLEX_ADMIN_PASSWORD
+        sync: false

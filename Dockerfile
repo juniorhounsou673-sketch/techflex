@@ -11,8 +11,8 @@ RUN npm run build
 FROM php:8.3-cli-bookworm
 
 RUN apt-get update && apt-get install -y \
-    git curl unzip libpng-dev libonig-dev libxml2-dev libzip-dev libsqlite3-dev libicu-dev \
-    && docker-php-ext-install pdo pdo_sqlite pdo_mysql mbstring exif pcntl bcmath gd zip intl opcache \
+    git curl unzip libpng-dev libonig-dev libxml2-dev libzip-dev libsqlite3-dev libicu-dev libpq-dev \
+    && docker-php-ext-install pdo pdo_sqlite pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip intl opcache \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -42,13 +42,15 @@ RUN (composer install --no-dev --optimize-autoloader --no-interaction --no-progr
 ENV PORT=8080
 EXPOSE 8080
 
-# Au démarrage : adapte l'URL publique, prépare la base SQLite, charge les
-# données de démonstration une seule fois, puis lance le serveur sur $PORT.
+# Au démarrage : adapte l'URL publique, prépare la base si nécessaire,
+# applique les migrations et le seeder idempotent, puis lance le serveur.
+# En production la base est PostgreSQL (persistante) : le fichier SQLite local
+# n'est créé que pour un développement sans base externe.
 CMD APP_URL="$(echo "${RENDER_EXTERNAL_URL:-https://techflex-boutique.onrender.com}" | sed 's#^http://#https://#')" && \
     export APP_URL && \
-    touch database/database.sqlite && \
+    if [ "${DB_CONNECTION:-sqlite}" = "sqlite" ]; then mkdir -p database && touch database/database.sqlite && chmod -R 775 database; fi && \
     php artisan migrate --force && \
-    (php artisan db:seed --force || true) && \
+    php artisan db:seed --force && \
     (php artisan storage:link || true) && \
     php artisan optimize && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-8080}

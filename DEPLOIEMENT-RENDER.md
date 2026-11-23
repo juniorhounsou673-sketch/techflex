@@ -1,78 +1,70 @@
-# Déploiement de TECHFLEX Boutique sur Render (gratuit)
+# Déploiement de TECHFLEX Boutique sur Render
 
 ## URL de production
 
 **https://techflex-boutique.onrender.com**
 
-Le service est déployé depuis le dépôt public :
+Le service est déployé depuis le dépôt :
 `https://github.com/juniorhounsou673-sketch/techflex`
 
-## Plan utilisé
+## Architecture retenue
 
-- **Render Web Service — plan Free / Hobby**
-- Région : **Frankfurt**
-- Docker + PHP 8.3 + Node 22 pour la compilation Vite/Tailwind
-- Base **SQLite** embarquée dans le conteneur
-- `autoDeploy: true` : chaque push sur `main` redéploie automatiquement
+- **Render Web Service — plan Free** (Docker, PHP 8.3), région Frankfurt.
+- **Render PostgreSQL — plan Free** : base persistante, hors du conteneur.
+- `autoDeploy: true` : chaque push sur `main` redéploie le site.
+- HTTPS obligatoire, `APP_DEBUG=false`, locale `fr`, fuseau `Africa/Porto-Novo`.
+- Aucune carte bancaire n'est nécessaire sur le plan Free.
 
-Aucune carte bancaire n’est nécessaire. Ne sélectionne surtout pas **Pro (25 $/mois)**.
+> ⚠️ L'offre PostgreSQL gratuite de Render expire après environ **30 jours**.
+> Pour une mise en ligne définitive, prévoir un plan payant ou une base externe.
 
-## Déploiement depuis le blueprint
-
-Le fichier `render.yaml` est à la racine du dépôt. Pour recréer le service :
+## Première configuration
 
 1. Ouvre https://render.com/deploy?repo=https://github.com/juniorhounsou673-sketch/techflex
-2. Vérifie le nom `techflex-boutique` et le plan **Free**.
-3. Clique sur **Apply**.
+2. Vérifie le nom `techflex-boutique`, le plan **Free** et la base `techflex-db`.
+3. Renseigne les variables secrètes demandées (`sync: false`) :
+   - `APP_KEY` : clé Laravel au format `base64:` (générée avec `php artisan key:generate`).
+   - `TECHFLEX_ADMIN_EMAIL` : email de votre compte administrateur.
+   - `TECHFLEX_ADMIN_PASSWORD` : mot de passe solide, jamais `password`.
+4. Clique sur **Apply**.
 
-Render lit automatiquement `render.yaml`, construit l’image Docker, lance les
-migrations, remplit la base de démonstration et expose le chemin de santé `/up`.
+Render construit l'image Docker, crée la base PostgreSQL, lance les migrations,
+puis le seeder idempotent. Le seeder crée les catégories, un catalogue de départ
+et **uniquement le compte administrateur** : aucun revendeur de test n'est créé
+en production (`TECHFLEX_SEED_DEMO=false`).
 
-## Comptes de démonstration
+## Ajouter vos revendeurs
 
-| Rôle | Email | Mot de passe |
-|---|---|---|
-| Administrateur | `admin@techflex.test` | `password` |
-| Revendeur 1 | `revendeur1@techflex.test` | `password` |
-| Revendeur 2 | `revendeur2@techflex.test` | `password` |
+1. Ouvre https://techflex-boutique.onrender.com/connexion
+2. Connecte-toi avec `TECHFLEX_ADMIN_EMAIL` / `TECHFLEX_ADMIN_PASSWORD`.
+3. Va dans **Revendeurs → Donner accès à un revendeur**.
+4. Chaque revendeur reçoit son lien `/r/CODE` et peut se connecter avec l'email
+   et le mot de passe définis à la création.
 
-La boutique publique n’a pas besoin de compte : le client saisit son nom et son
-numéro au moment de commander.
+Les données saisies restent dans PostgreSQL : elles survivent aux redéploiements.
+Le catalogue de départ n'est jamais réinitialisé (`firstOrCreate` dans le seeder).
 
-## Parcours à vérifier
+## Variables d'environnement importantes
 
-1. **Boutique** : `/` affiche les catégories Accessoires Apple et Montres de luxe.
-2. **Lien revendeur** : `/r/REV001` active le revendeur 1 ; `/direct` revient en vente directe.
-3. **Commande** : ajoute un produit au panier, remplis le formulaire `/commander`,
-   puis choisis le paiement.
-4. **Admin** : `/admin` → produits, revendeurs, livraisons.
-5. **Revendeur** : `/revendeur` → tableau de bord et solde.
+- `APP_KEY` : secret Render, ne jamais le committer. Ne pas utiliser le bouton
+  « Generate » de Render (valeur incompatible avec Laravel).
+- `APP_URL` : posée dans `render.yaml`, remplacée automatiquement par
+  `RENDER_EXTERNAL_URL` au démarrage.
+- `DATABASE_URL` : fournie automatiquement par `techflex-db` via `render.yaml`.
+- `TECHFLEX_DELIVERY_PHONE` : numéro WhatsApp unique qui reçoit les demandes de
+  livraison. Remplace `22900000000` par votre vrai numéro avec indicatif.
+- `TECHFLEX_MOMO_SIMULATION=true` : aucun paiement réel n'est effectué tant que
+  l'API MoMo n'est pas branchée. Le mode simulé n'est jamais proposé en ligne.
+- `SESSION_SECURE_COOKIE=true` : cookie transmis uniquement en HTTPS.
 
-## Variables d’environnement importantes
+## Bon à savoir
 
-- `APP_KEY` : déjà fournie dans `render.yaml` au format `base64:` + 32 octets.
-  **Ne clique pas sur Generate** dans Render : la valeur générée n’est pas compatible
-  avec Laravel et provoque une erreur 500 `Unsupported cipher or incorrect key length`.
-- `APP_URL` : posée dans `render.yaml`, puis remplacée automatiquement au démarrage
-  par `RENDER_EXTERNAL_URL` si Render la fournit.
-- `SESSION_DRIVER`, `CACHE_STORE`, `QUEUE_CONNECTION` : `database`, donc aucune
-  configuration externe requise.
-- `TECHFLEX_DELIVERY_PHONE` : numéro WhatsApp qui reçoit les demandes de livraison.
-  Remplace `22900000000` par ton vrai numéro avec l’indicatif.
-- `TECHFLEX_MOMO_SIMULATION=true` : aucun paiement réel n’est effectué.
-- `SESSION_SECURE_COOKIE=true` : cookie de session transmis uniquement en HTTPS.
-
-Pour un vrai environnement de production, déplace `APP_KEY` vers une variable
-secrète Render et utilise une base PostgreSQL persistante au lieu de SQLite.
-
-## Important à savoir
-
-- La base SQLite vit dans le conteneur : un **redeploy ou un restart remet les
-  données de démonstration à zéro**. C’est normal sur le plan gratuit.
-- Le plan gratuit met le service en veille après environ 15 minutes d’inactivité.
-  La première requête peut prendre 50 secondes.
-- En cas d’erreur 500, consulte **Logs** dans le dashboard Render, puis
+- Le plan gratuit met le service en veille après ~15 min d'inactivité : la
+  première requête peut prendre 50 secondes.
+- En cas d'erreur 500, consulte **Logs** dans le dashboard Render, puis
   **Manual Deploy → Deploy latest commit**.
+- Le dépôt GitHub doit rester **privé** : il contient la configuration du site
+  et les données des revendeurs ne doivent jamais y être commitées.
 
 ## Commandes locales utiles
 
