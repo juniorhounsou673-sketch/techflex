@@ -60,14 +60,14 @@ class ResellerController extends Controller
             ]);
         });
 
-        $sent = $this->sendInvitation($reseller->user);
+        $invitation = $this->sendInvitation($reseller->user);
         $message = "Accès créé pour {$reseller->user->name}. ";
-        $message .= $sent
+        $message .= $invitation['sent']
             ? "Un email d'invitation lui a été envoyé pour définir son mot de passe. Lien de vente : " . url('/r/' . $reseller->code)
-            : "L'email d'invitation n'a pas pu être envoyé. Vérifiez la configuration mail puis cliquez sur « Renvoyer l'invitation ».";
+            : "Email non livré (service mail à configurer). Transmettez ce lien au revendeur : {$invitation['url']}";
 
         return redirect()->route('admin.resellers.index')
-            ->with($sent ? 'success' : 'error', $message);
+            ->with($invitation['sent'] ? 'success' : 'error', $message);
     }
 
     /** Renvoyer l'email d'invitation (lien perdu, email non reçu...). */
@@ -83,20 +83,22 @@ class ResellerController extends Controller
             return back()->with('error', "{$user->name} a déjà défini son mot de passe.");
         }
 
-        $sent = $this->sendInvitation($user);
+        $invitation = $this->sendInvitation($user);
 
         return back()->with(
-            $sent ? 'success' : 'error',
-            $sent
+            $invitation['sent'] ? 'success' : 'error',
+            $invitation['sent']
                 ? "Nouvelle invitation envoyée à {$user->email}."
-                : "Envoi impossible : vérifiez la configuration mail de TECHFLEX."
+                : "Email non livré. Transmettez ce lien au revendeur : {$invitation['url']}"
         );
     }
 
-    private function sendInvitation(User $user): bool
+    /** @return array{sent: bool, url: string} */
+    private function sendInvitation(User $user): array
     {
         $token = Str::random(64);
         $days = (int) config('techflex.invitation_ttl_days', 7);
+        $url = route('reseller.invitation.show', $token);
 
         $user->forceFill([
             'invitation_token' => hash('sha256', $token),
@@ -104,14 +106,20 @@ class ResellerController extends Controller
             'password_set_at' => null,
         ])->save();
 
-        try {
-            $user->notify(new ResellerInvitation(route('reseller.invitation.show', $token), $days));
+        // Avec le driver « log », l'email n'est jamais livré : on renvoie le lien
+        // à l'admin pour qu'il puisse le transmettre en attendant la config SMTP.
+        if (config('mail.default') === 'log' && ! app()->runningUnitTests()) {
+            return ['sent' => false, 'url' => $url];
+        }
 
-            return true;
+        try {
+            $user->notify(new ResellerInvitation($url, $days));
+
+            return ['sent' => true, 'url' => $url];
         } catch (Throwable $e) {
             report($e);
 
-            return false;
+            return ['sent' => false, 'url' => $url];
         }
     }
 
