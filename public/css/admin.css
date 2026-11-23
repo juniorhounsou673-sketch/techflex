@@ -81,3 +81,13 @@ code { background: #f1f1f4; padding: 3px 8px; border-radius: 6px; word-break: br
 .showcase-head a.btn:not(.btn-outline) { color: var(--accent-text, #fff); }
 .actions-cell { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .actions-cell form { margin: 0; }
+
+/* ---------- Avis clients ---------- */
+.reviews-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+.review-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.review-body { margin: 0; white-space: pre-line; }
+.review-author { margin-top: auto; font-size: .92rem; }
+.review-img { max-width: 100%; max-height: 220px; border-radius: 10px; border: 1px solid var(--border); object-fit: contain; background: #f1f1f4; }
+.stars { color: #d4af37; letter-spacing: 2px; font-size: 1.05rem; }
+.stars-off { color: #d9d9de; }
+.reviews-section { border-top: 1px solid var(--border); }

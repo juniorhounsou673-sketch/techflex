@@ -21,7 +21,7 @@
                         <th>Lien de vente</th>
                         <th>MoMo</th>
                         <th>Statut</th>
-                        <th>À reverser</th>
+                        <th>Compte</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -43,7 +43,7 @@
                                 <span class="badge badge-green">Actif</span>
                             @endif
                         </td>
-                        <td>{{ \App\Support\Shop::money($r->balance()) }}</td>
+                        <td>{{ $r->balanceText() }}<br><a href="{{ route('admin.resellers.show', $r) }}" class="small">Voir le compte</a></td>
                         <td>
                             @if($r->isBlocked())
                                 <form method="POST" action="{{ route('admin.resellers.unblock', $r) }}">

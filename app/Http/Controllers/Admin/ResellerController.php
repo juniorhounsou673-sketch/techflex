@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Reseller;
+use App\Models\ResellerSettlement;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -73,6 +74,62 @@ class ResellerController extends Controller
         $reseller->unblock();
 
         return back()->with('success', "{$reseller->user->name} est réactivé.");
+    }
+
+    /** Compte d'un revendeur : ventes, gains, soldes dans les deux sens, versements. */
+    public function show(Reseller $reseller)
+    {
+        $reseller->load('user');
+
+        $orders = $reseller->orders()
+            ->where('payment_status', 'paye')
+            ->where('status', '!=', 'annulee')
+            ->where('taken_over_by_admin', false)
+            ->latest('id')
+            ->get();
+
+        // Commandes reprises (revendeur bloqué) pour lesquelles le revendeur avait encaissé l'argent
+        $takenOver = $reseller->orders()
+            ->where('payment_status', 'paye')
+            ->where('taken_over_by_admin', true)
+            ->where('payment_method', 'momo_revendeur')
+            ->get();
+
+        return view('admin.resellers.show', [
+            'reseller' => $reseller,
+            'orders' => $orders,
+            'takenOver' => $takenOver,
+            'settlements' => $reseller->settlements()->latest('paid_at')->latest('id')->get(),
+            'gain' => $reseller->totalGain(),
+            'owedToTechflex' => $reseller->owedToTechflex(),
+            'owedToReseller' => $reseller->owedToReseller(),
+            'paidIn' => $reseller->settledToTechflex(),
+            'paidOut' => $reseller->settledToReseller(),
+            'balance' => $reseller->balance(),
+        ]);
+    }
+
+    /** Enregistre un versement (dans un sens ou dans l'autre). */
+    public function settle(Request $request, Reseller $reseller)
+    {
+        $data = $request->validate([
+            'direction' => 'required|in:reseller_to_techflex,techflex_to_reseller',
+            'amount' => 'required|integer|min:1',
+            'momo_reference' => 'nullable|string|max:60',
+            'note' => 'nullable|string|max:190',
+        ]);
+
+        $reseller->settlements()->create($data + ['paid_at' => now()]);
+
+        return back()->with('success', 'Versement enregistré.');
+    }
+
+    /** Annule un versement saisi par erreur. */
+    public function settlementDestroy(ResellerSettlement $settlement)
+    {
+        $settlement->delete();
+
+        return back()->with('success', 'Versement supprimé.');
     }
 
     private function nextCode(): string

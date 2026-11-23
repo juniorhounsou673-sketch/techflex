@@ -15,8 +15,13 @@ class DashboardController extends Controller
         $stats = [
             'actifs' => $resellers->where('status', 'actif')->count(),
             'bloques' => $resellers->where('status', 'bloque')->count(),
-            'total_a_recevoir' => $resellers->sum(fn (Reseller $r) => $r->balance()),
+            'ils_doivent' => $resellers->sum(fn (Reseller $r) => max($r->balance(), 0)),
+            'vous_devez' => $resellers->sum(fn (Reseller $r) => max(-$r->balance(), 0)),
             'commandes' => Order::count(),
+            'a_confirmer' => Order::where('payment_status', 'en_attente')
+                ->whereIn('payment_method', ['momo_direct', 'momo_revendeur'])
+                ->whereNotNull('momo_transaction_id')
+                ->count(),
         ];
 
         return view('admin.dashboard', compact('stats'));

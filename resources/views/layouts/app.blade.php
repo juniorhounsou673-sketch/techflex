@@ -22,8 +22,10 @@
             @if($inStaffArea && $authUser->isAdmin())
                 <a href="{{ route('admin.dashboard') }}">Tableau de bord</a>
                 <a href="{{ route('admin.products.index') }}">Produits</a>
+                <a href="{{ route('admin.orders.index') }}">Commandes</a>
                 <a href="{{ route('admin.deliveries.index') }}">Livraisons</a>
                 <a href="{{ route('admin.resellers.index') }}">Revendeurs</a>
+                <a href="{{ route('admin.reviews.index') }}">Avis</a>
                 <a href="{{ route('home') }}">Voir le site</a>
             @elseif($inStaffArea && $authUser->isReseller())
                 <a href="{{ route('reseller.dashboard') }}">Mon espace</a>

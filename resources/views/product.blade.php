@@ -73,6 +73,21 @@
     </div>
 </section>
 
+@isset($reviews)
+@if($reviews->isNotEmpty())
+    <section class="showcase section-apple reviews-section">
+        <div class="container">
+            <div class="showcase-head"><h2>Avis sur ce produit</h2></div>
+            <div class="reviews-grid">
+                @foreach($reviews as $review)
+                    @include('partials.review-card', ['review' => $review, 'showProduct' => false])
+                @endforeach
+            </div>
+        </div>
+    </section>
+@endif
+@endisset
+
 <script>
 document.querySelectorAll('.thumb-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {

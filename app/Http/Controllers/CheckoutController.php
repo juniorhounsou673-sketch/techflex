@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Support\PaymentMethods;
 use App\Support\Shop;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,14 +25,13 @@ class CheckoutController extends Controller
             'lines' => $lines,
             'total' => $lines->sum('subtotal'),
             'reseller' => Shop::reseller(),
+            'methods' => PaymentMethods::available(Shop::reseller() !== null),
         ]);
     }
 
     public function store(Request $request)
     {
-        $allowed = Shop::reseller()
-            ? ['momo_site', 'momo_revendeur', 'livraison']
-            : ['momo_site', 'livraison'];
+        $allowed = PaymentMethods::available(Shop::reseller() !== null);
 
         $data = $request->validate([
             'client_name' => 'required|string|max:120',
@@ -98,10 +98,13 @@ class CheckoutController extends Controller
         session()->forget('cart');
         session()->push('my_orders', $order->reference);
 
-        // MoMo sur le site : paiement d'abord. Sinon : directement la livraison.
-        return $order->payment_method === 'momo_site'
-            ? redirect()->route('order.pay', $order->reference)
-            : redirect()->route('order.delivery', $order->reference);
+        // MoMo sur le site : paiement d'abord. MoMo manuel : instructions de paiement d'abord.
+        // Paiement à la livraison : directement le choix de la livraison.
+        return match (true) {
+            $order->payment_method === 'momo_site' => redirect()->route('order.pay', $order->reference),
+            PaymentMethods::manualMomo($order->payment_method) => redirect()->route('order.show', $order->reference),
+            default => redirect()->route('order.delivery', $order->reference),
+        };
     }
 
     private function newReference(): string

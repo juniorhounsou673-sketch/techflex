@@ -16,11 +16,19 @@
         <div class="stats">
             <div class="stat"><div class="stat-num">{{ \App\Support\Shop::money($sales) }}</div><div class="muted">Ventes payées</div></div>
             <div class="stat"><div class="stat-num">{{ \App\Support\Shop::money($profit) }}</div><div class="muted">Votre bénéfice</div></div>
-            <div class="stat"><div class="stat-num">{{ \App\Support\Shop::money($balance) }}</div><div class="muted">Reste à reverser à TECHFLEX</div></div>
+            <div class="stat">
+                @if($balance > 0)
+                    <div class="stat-num">{{ \App\Support\Shop::money($balance) }}</div><div class="muted">Vous devez à TECHFLEX</div>
+                @elseif($balance < 0)
+                    <div class="stat-num">{{ \App\Support\Shop::money(-$balance) }}</div><div class="muted">TECHFLEX vous doit</div>
+                @else
+                    <div class="stat-num">0 FCFA</div><div class="muted">Compte à jour</div>
+                @endif
+            </div>
         </div>
 
         <h2>Vos prix revendeur</h2>
-        <p class="muted small">Le prix revendeur est ce que vous reversez à TECHFLEX pour chaque produit vendu. Le client paie le prix client, et la différence est votre gain.</p>
+        <p class="muted small">Le client paie le prix client, et la différence avec le prix revendeur est votre gain. Quand le client vous paie sur votre numéro MoMo, vous reversez le prix revendeur à TECHFLEX. Quand le client paie TECHFLEX (à la livraison, par exemple), c'est TECHFLEX qui vous verse votre gain.</p>
         @if($products->isEmpty())
             <p class="muted">Aucun produit pour le moment.</p>
         @else
@@ -34,6 +42,27 @@
                             <td>{{ \App\Support\Shop::money($p->prix_client) }}</td>
                             <td><strong>{{ \App\Support\Shop::money($p->prixRevendeur()) }}</strong></td>
                             <td>{{ \App\Support\Shop::money($p->gain_revendeur) }}</td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+
+        <h2 style="margin-top:32px">Vos versements</h2>
+        @if($settlements->isEmpty())
+            <p class="muted">Aucun versement enregistré pour le moment.</p>
+        @else
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Date</th><th>Sens</th><th>Montant</th><th>Référence</th></tr></thead>
+                    <tbody>
+                    @foreach($settlements as $st)
+                        <tr>
+                            <td>{{ $st->paid_at->timezone('Africa/Porto-Novo')->format('d/m/Y') }}</td>
+                            <td>{{ $st->direction === 'reseller_to_techflex' ? 'Vous avez versé à TECHFLEX' : 'TECHFLEX vous a versé' }}</td>
+                            <td>{{ \App\Support\Shop::money($st->amount) }}</td>
+                            <td>{{ $st->momo_reference }}</td>
                         </tr>
                     @endforeach
                     </tbody>

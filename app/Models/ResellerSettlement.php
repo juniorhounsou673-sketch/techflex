@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ResellerSettlement extends Model
 {
-    protected $fillable = ['reseller_id', 'amount', 'momo_reference', 'note', 'paid_at'];
+    protected $fillable = ['reseller_id', 'direction', 'amount', 'momo_reference', 'note', 'paid_at'];
 
     protected function casts(): array
     {

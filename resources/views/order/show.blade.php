@@ -6,6 +6,11 @@
 @php
     $delivery = $order->delivery;
     $deliveryLabels = ['planifiee' => 'Planifiée', 'en_route' => 'En route', 'livree' => 'Livrée', 'echouee' => 'Échouée'];
+    $manualMomo = \App\Support\PaymentMethods::manualMomo($order->payment_method);
+    $momoNumber = $order->payment_method === 'momo_direct' ? config('techflex.momo_number') : $order->reseller?->momo_number;
+    $momoName = $order->payment_method === 'momo_direct' ? config('techflex.momo_name') : null;
+    $waText = "Paiement MoMo - commande {$order->reference}\nMontant : " . \App\Support\Shop::money($order->total) . "\nReference : {$order->momo_transaction_id}";
+    $waPayUrl = 'https://wa.me/' . config('techflex.delivery_phone') . '?text=' . rawurlencode($waText);
 @endphp
 <section class="showcase page-fill section-apple">
     <div class="container">
@@ -22,17 +27,20 @@
                     @elseif($order->payment_method === 'momo_site')
                         <p>Paiement MoMo en attente.</p>
                         <a href="{{ route('order.pay', $order->reference) }}" class="btn">Payer {{ \App\Support\Shop::money($order->total) }}</a>
-                    @elseif($order->payment_method === 'momo_revendeur')
+                    @elseif($manualMomo)
                         <p>Envoyez <strong>{{ \App\Support\Shop::money($order->total) }}</strong> par MoMo au numéro :</p>
-                        <p class="pay-amount">{{ $order->reseller?->momo_number }}</p>
+                        <p class="pay-amount">{{ $momoNumber }}</p>
+                        @if($momoName)<p class="muted small">Au nom de : {{ $momoName }}</p>@endif
 
                         @if($order->momo_transaction_id)
                             <p><span class="badge badge-gold">En attente de confirmation</span></p>
                             <p class="muted small">Référence enregistrée : {{ $order->momo_transaction_id }}</p>
+                            <a href="{{ $waPayUrl }}" target="_blank" rel="noopener" class="btn btn-small">Prévenir TECHFLEX sur WhatsApp</a>
+                            <p class="muted small">Votre commande est confirmée dès que votre paiement est vérifié.</p>
                         @else
                             <form method="POST" action="{{ route('order.reference', $order->reference) }}" class="form">
                                 @csrf
-                                <label>Référence de la transaction MoMo (reçue par SMS)
+                                <label>Après l'envoi, saisissez la référence de la transaction (reçue par SMS)
                                     <input type="text" name="momo_transaction_id" required>
                                 </label>
                                 <button type="submit" class="btn btn-small">Enregistrer la référence</button>

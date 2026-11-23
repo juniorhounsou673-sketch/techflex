@@ -3,6 +3,14 @@
 @section('title', 'Commander — TECHFLEX')
 
 @section('content')
+@php
+    $labels = [
+        'momo_site' => ['Payer maintenant par MoMo', 'Paiement sur le site, puis choix de la livraison.'],
+        'momo_direct' => ['Payer par MoMo vers TECHFLEX', 'Le numéro vous est donné juste après la commande.'],
+        'momo_revendeur' => ['Payer par MoMo vers le numéro du vendeur', 'Le numéro vous est donné juste après la commande.'],
+        'livraison' => ['Payer à la livraison', 'Vous choisissez ensuite le jour, l\'heure et le lieu de livraison.'],
+    ];
+@endphp
 <section class="showcase page-fill section-apple">
     <div class="container">
         <a href="{{ route('cart') }}" class="back">← Retour au panier</a>
@@ -24,25 +32,13 @@
                     <div class="pay-options">
                         <div class="pay-title">Mode de paiement</div>
 
-                        <label class="pay-option">
-                            <input type="radio" name="payment_method" value="momo_site" {{ old('payment_method', 'momo_site') === 'momo_site' ? 'checked' : '' }}>
-                            <span><strong>Payer maintenant par MoMo</strong><br>
-                            <span class="muted small">Paiement sécurisé sur le site, puis choix de la livraison.</span></span>
-                        </label>
-
-                        @if($reseller)
-                        <label class="pay-option">
-                            <input type="radio" name="payment_method" value="momo_revendeur" {{ old('payment_method') === 'momo_revendeur' ? 'checked' : '' }}>
-                            <span><strong>Payer par MoMo vers le numéro du vendeur</strong><br>
-                            <span class="muted small">Le numéro vous est donné après la commande.</span></span>
-                        </label>
-                        @endif
-
-                        <label class="pay-option">
-                            <input type="radio" name="payment_method" value="livraison" {{ old('payment_method') === 'livraison' ? 'checked' : '' }}>
-                            <span><strong>Payer à la livraison</strong><br>
-                            <span class="muted small">Vous choisissez ensuite le jour, l'heure et le lieu de livraison.</span></span>
-                        </label>
+                        @foreach($methods as $m)
+                            <label class="pay-option">
+                                <input type="radio" name="payment_method" value="{{ $m }}" {{ old('payment_method', $methods[0]) === $m ? 'checked' : '' }}>
+                                <span><strong>{{ $labels[$m][0] }}</strong><br>
+                                <span class="muted small">{{ $labels[$m][1] }}</span></span>
+                            </label>
+                        @endforeach
                     </div>
 
                     <button type="submit" class="btn">Valider la commande</button>

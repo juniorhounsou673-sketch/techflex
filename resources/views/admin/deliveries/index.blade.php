@@ -5,7 +5,7 @@
 @section('content')
 @php
     $statuses = ['planifiee' => 'Planifiée', 'en_route' => 'En route', 'livree' => 'Livrée', 'echouee' => 'Échouée'];
-    $methods = ['momo_site' => 'MoMo site', 'momo_revendeur' => 'MoMo vendeur', 'livraison' => 'À la livraison'];
+    $methods = ['momo_site' => 'MoMo site', 'momo_revendeur' => 'MoMo vendeur', 'momo_direct' => 'MoMo TECHFLEX', 'livraison' => 'À la livraison'];
 @endphp
 <section class="showcase page-fill section-apple">
     <div class="container">

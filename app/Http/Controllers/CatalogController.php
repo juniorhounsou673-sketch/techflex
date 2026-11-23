@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Reseller;
+use App\Models\Review;
 use App\Support\Shop;
 
 class CatalogController extends Controller
@@ -20,7 +21,9 @@ class CatalogController extends Controller
             return $cat;
         });
 
-        return view('home', compact('sections'));
+        $reviews = Review::published()->with('product')->latest('id')->take(6)->get();
+
+        return view('home', compact('sections', 'reviews'));
     }
 
     public function category(string $slug)
@@ -36,7 +39,9 @@ class CatalogController extends Controller
         // Vérifie aussi que le produit est visible pour ce revendeur (sinon 404)
         $product = Shop::products()->findOrFail($product->id);
 
-        return view('product', compact('product'));
+        $reviews = Review::published()->with('product')->where('product_id', $product->id)->latest('id')->get();
+
+        return view('product', compact('product', 'reviews'));
     }
 
     /** Lien de vente d'un revendeur : /r/REV001 */

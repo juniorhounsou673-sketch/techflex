@@ -31,4 +31,20 @@
         </div>
     </section>
 @endforeach
+
+@if($reviews->isNotEmpty())
+    <section class="showcase section-apple reviews-section">
+        <div class="container">
+            <div class="showcase-head">
+                <h2>Ce que disent nos clients</h2>
+                <a href="{{ route('reviews') }}">Voir tous les avis →</a>
+            </div>
+            <div class="reviews-grid">
+                @foreach($reviews as $review)
+                    @include('partials.review-card', ['review' => $review])
+                @endforeach
+            </div>
+        </div>
+    </section>
+@endif
 @endsection

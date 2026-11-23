@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Services\MomoGateway;
+use App\Support\PaymentMethods;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -74,12 +75,12 @@ class OrderController extends Controller
             ->with('success', 'Paiement reçu. Vous pouvez maintenant programmer votre livraison.');
     }
 
-    // ---------- Référence de transaction (paiement MoMo vers le compte du revendeur) ----------
+    // ---------- Référence de transaction (paiement MoMo envoyé à la main vers TECHFLEX ou le vendeur) ----------
     public function saveReference(Request $request, string $reference)
     {
         $order = $this->mine($reference);
 
-        abort_unless($order->payment_method === 'momo_revendeur' && ! $order->isPaid(), 403);
+        abort_unless(PaymentMethods::manualMomo($order->payment_method) && ! $order->isPaid(), 403);
 
         $data = $request->validate(['momo_transaction_id' => 'required|string|max:60']);
 

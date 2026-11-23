@@ -5,11 +5,13 @@ use App\Http\Controllers\Admin\DeliveryController as AdminDeliveryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ResellerController as AdminResellerController;
+use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\Reseller\DashboardController as ResellerDashboardController;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +42,9 @@ Route::prefix('commande/{reference}')->name('order.')->group(function () {
     Route::post('/livraison', [OrderController::class, 'deliveryStore'])->name('delivery.store');
 });
 
+// Avis clients
+Route::get('/avis', [ReviewController::class, 'index'])->name('reviews');
+
 // ---------- Connexion ----------
 Route::middleware('guest')->group(function () {
     Route::get('/connexion', [AuthController::class, 'showLogin'])->name('login');
@@ -61,16 +66,29 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/medias/{media}/supprimer', [AdminProductController::class, 'mediaDestroy'])->name('media.destroy');
     Route::post('/medias/{media}/principale', [AdminProductController::class, 'mediaCover'])->name('media.cover');
 
+    // Avis clients
+    Route::get('/avis', [AdminReviewController::class, 'index'])->name('reviews.index');
+    Route::get('/avis/creer', [AdminReviewController::class, 'create'])->name('reviews.create');
+    Route::post('/avis', [AdminReviewController::class, 'store'])->name('reviews.store');
+    Route::get('/avis/{review}/modifier', [AdminReviewController::class, 'edit'])->name('reviews.edit');
+    Route::post('/avis/{review}', [AdminReviewController::class, 'update'])->name('reviews.update');
+    Route::post('/avis/{review}/visibilite', [AdminReviewController::class, 'toggle'])->name('reviews.toggle');
+    Route::post('/avis/{review}/supprimer', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
+
     // Revendeurs
     Route::get('/revendeurs', [AdminResellerController::class, 'index'])->name('resellers.index');
     Route::get('/revendeurs/creer', [AdminResellerController::class, 'create'])->name('resellers.create');
     Route::post('/revendeurs', [AdminResellerController::class, 'store'])->name('resellers.store');
+    Route::get('/revendeurs/{reseller}', [AdminResellerController::class, 'show'])->name('resellers.show');
+    Route::post('/revendeurs/{reseller}/versements', [AdminResellerController::class, 'settle'])->name('resellers.settle');
+    Route::post('/versements/{settlement}/supprimer', [AdminResellerController::class, 'settlementDestroy'])->name('settlements.destroy');
     Route::post('/revendeurs/{reseller}/bloquer', [AdminResellerController::class, 'block'])->name('resellers.block');
     Route::post('/revendeurs/{reseller}/debloquer', [AdminResellerController::class, 'unblock'])->name('resellers.unblock');
 
     // Livraisons
     Route::get('/livraisons', [AdminDeliveryController::class, 'index'])->name('deliveries.index');
     Route::post('/livraisons/{delivery}/statut', [AdminDeliveryController::class, 'status'])->name('deliveries.status');
+    Route::get('/commandes', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::post('/commandes/{order}/paye', [AdminOrderController::class, 'markPaid'])->name('orders.paid');
 });
 
