@@ -17,12 +17,23 @@ RUN apt-get update && apt-get install -y \
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# Autorise les photos produits jusqu'à 50 Mo (validation Laravel : max:51200).
+RUN printf 'upload_max_filesize=64M\npost_max_size=70M\nmemory_limit=256M\nmax_execution_time=120\n' \
+    > /usr/local/etc/php/conf.d/zz-techflex.ini
+
 WORKDIR /app
 
 COPY . .
 COPY --from=frontend /app/public/build /app/public/build
 
-RUN composer install --no-dev --optimize-autoloader --no-interaction \
+# Téléchargements séquentiels : évite les 504 temporaires de l'API GitHub
+# lors d'un composer install avec beaucoup de paquets en parallèle.
+ENV COMPOSER_MAX_PARALLEL_DOWNLOADS=1
+ENV COMPOSER_PROCESS_TIMEOUT=600
+
+RUN (composer install --no-dev --optimize-autoloader --no-interaction --no-progress \
+     || composer install --no-dev --optimize-autoloader --no-interaction --no-progress \
+     || composer install --no-dev --optimize-autoloader --no-interaction --no-progress --prefer-source) \
     && mkdir -p database storage/framework/sessions storage/framework/views \
                storage/framework/cache/data storage/logs bootstrap/cache \
     && touch database/database.sqlite \

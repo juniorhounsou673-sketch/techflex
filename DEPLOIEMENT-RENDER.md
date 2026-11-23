@@ -57,6 +57,10 @@ numéro au moment de commander.
   par `RENDER_EXTERNAL_URL` si Render la fournit.
 - `SESSION_DRIVER`, `CACHE_STORE`, `QUEUE_CONNECTION` : `database`, donc aucune
   configuration externe requise.
+- `TECHFLEX_DELIVERY_PHONE` : numéro WhatsApp qui reçoit les demandes de livraison.
+  Remplace `22900000000` par ton vrai numéro avec l’indicatif.
+- `TECHFLEX_MOMO_SIMULATION=true` : aucun paiement réel n’est effectué.
+- `SESSION_SECURE_COOKIE=true` : cookie de session transmis uniquement en HTTPS.
 
 Pour un vrai environnement de production, déplace `APP_KEY` vers une variable
 secrète Render et utilise une base PostgreSQL persistante au lieu de SQLite.

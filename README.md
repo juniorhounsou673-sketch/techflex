@@ -18,7 +18,7 @@ avec espace administrateur, espace revendeur et suivi des commandes.
 
 ### Espace administrateur `/admin`
 - Tableau de bord : revendeurs actifs, revendeurs bloqués, soldes, commandes.
-- Gestion des produits, catégories et médias.
+- Gestion des produits et de leurs médias (les catégories sont fournies dans le catalogue de démonstration).
 - Création et blocage/déblocage des revendeurs.
 - Suivi des livraisons et validation du paiement des commandes.
 
