@@ -43,6 +43,12 @@ class Product extends Model
             return $img->url();
         }
 
-        return $this->image ? asset('storage/' . $this->image) : null;
+        if (! $this->image) {
+            return null;
+        }
+
+        return str_starts_with((string) $this->image, 'http')
+            ? $this->image
+            : asset('storage/' . $this->image);
     }
 }

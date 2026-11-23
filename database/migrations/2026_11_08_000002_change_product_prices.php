@@ -19,10 +19,13 @@ return new class extends Migration
             $table->unsignedBigInteger('gain_revendeur')->default(0)->after('prix_client');
         });
 
-        // Produits déjà créés : gain de départ = 10 % du prix (à ajuster ensuite dans l'admin)
-        DB::table('products')->update([
-            'gain_revendeur' => DB::raw('FLOOR(prix_client * 0.10 / 100) * 100'),
-        ]);
+        // Produits déjà créés : gain de départ = 10 % du prix (à ajuster ensuite dans l'admin).
+        // Calculé en PHP car SQLite ne fournit pas FLOOR().
+        foreach (DB::table('products')->select('id', 'prix_client')->get() as $product) {
+            DB::table('products')->where('id', $product->id)->update([
+                'gain_revendeur' => (int) floor($product->prix_client * 0.10 / 100) * 100,
+            ]);
+        }
     }
 
     public function down(): void
