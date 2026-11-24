@@ -7,7 +7,11 @@
 <section class="showcase page-fill {{ $themeClass }}">
     <div class="container">
         <div class="showcase-head">
-            <h1>{{ $category->name }}</h1>
+            <div>
+                <span class="eyebrow">La collection</span>
+                <h1>{{ $category->name }}</h1>
+            </div>
+            <a href="{{ route('home') }}" class="show-link">Retour à l'accueil <span aria-hidden="true">→</span></a>
         </div>
 
         @if($products->isEmpty())

@@ -6,7 +6,10 @@
 <section class="showcase page-fill section-apple">
     <div class="container">
         <div class="showcase-head">
-            <h1>Avis de nos clients</h1>
+            <div>
+                <span class="eyebrow">Témoignages</span>
+                <h1>Avis de nos clients</h1>
+            </div>
             @if($average)
                 <div><span class="stars">★</span> <strong>{{ number_format($average, 1, ',', '') }} / 5</strong>
                     <span class="muted">· {{ $reviews->count() }} avis</span></div>

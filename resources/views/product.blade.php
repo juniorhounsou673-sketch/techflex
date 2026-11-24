@@ -44,6 +44,7 @@
             </div>
 
             <div class="product-info">
+                <span class="eyebrow">Fiche produit</span>
                 @if($product->brand)<div class="card-brand">{{ $product->brand }}</div>@endif
                 <h1>{{ $product->name }}</h1>
                 <div class="product-price">{{ \App\Support\Shop::money($price) }}</div>
@@ -57,7 +58,7 @@
                 <p class="product-desc">{{ $product->description }}</p>
 
                 @if($product->stock > 0)
-                    <p class="muted">{{ $product->stock }} en stock</p>
+                    <p class="stock-line">{{ $product->stock }} en stock</p>
                     <form method="POST" action="{{ route('cart.add', $product) }}" class="add-form">
                         @csrf
                         <label>Quantité
@@ -77,7 +78,12 @@
 @if($reviews->isNotEmpty())
     <section class="showcase section-apple reviews-section">
         <div class="container">
-            <div class="showcase-head"><h2>Avis sur ce produit</h2></div>
+            <div class="showcase-head">
+                <div>
+                    <span class="eyebrow">Retours clients</span>
+                    <h2>Avis sur ce produit</h2>
+                </div>
+            </div>
             <div class="reviews-grid">
                 @foreach($reviews as $review)
                     @include('partials.review-card', ['review' => $review, 'showProduct' => false])
