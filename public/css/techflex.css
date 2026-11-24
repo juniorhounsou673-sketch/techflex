@@ -257,6 +257,7 @@ button, input, select, textarea { font: inherit; }
 /* Pied de page */
 .site-footer { background: #0a0e14; color: #a9a394; padding: 54px 0 22px; font-size: .88rem; border-top: 1px solid rgba(229, 201, 120, .16); }
 .footer-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 40px; padding-bottom: 36px; }
+.footer-grid--guest { grid-template-columns: 1.6fr 1fr; }
 .footer-brand .logo { color: #f7f2e6; margin-bottom: 14px; }
 .footer-brand p { margin: 0; max-width: 320px; color: #8f8a80; }
 .footer-col h3 { margin: 0 0 14px; font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold-soft); }

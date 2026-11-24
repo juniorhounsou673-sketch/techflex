@@ -34,7 +34,6 @@
                 <a href="{{ route('home') }}">Voir le site</a>
             @else
                 <a href="{{ route('home') }}">Accueil</a>
-                <a href="{{ route('direct') }}">Achat direct</a>
                 <a href="{{ route('category', 'montres-de-luxe') }}">Montres</a>
                 <a href="{{ route('category', 'accessoires-apple') }}">Accessoires Apple</a>
                 <a href="{{ route('cart') }}" class="cart-link">Panier ({{ $cartCount }})</a>
@@ -71,7 +70,7 @@
 </main>
 
 <footer class="site-footer">
-    <div class="container footer-grid">
+    <div class="container footer-grid @guest footer-grid--guest @endguest">
         <div class="footer-brand">
             <a href="{{ route('home') }}" class="logo">TECH<span>FLEX</span><small>Boutique premium</small></a>
             <p>Une sélection d'accessoires Apple et de montres de luxe, livrée au Bénin au jour et à l'heure de votre choix.</p>
@@ -79,22 +78,20 @@
         <div class="footer-col">
             <h3>Boutique</h3>
             <a href="{{ route('home') }}">Accueil</a>
-            <a href="{{ route('direct') }}">Achat direct</a>
             <a href="{{ route('category', 'accessoires-apple') }}">Accessoires Apple</a>
             <a href="{{ route('category', 'montres-de-luxe') }}">Montres de luxe</a>
-            <a href="{{ route('reviews') }}">Avis clients</a>
         </div>
-        <div class="footer-col">
-            <h3>Espace pro</h3>
-            @if($authUser && $authUser->isAdmin())
-                <a href="{{ route('admin.dashboard') }}">Tableau de bord</a>
-            @elseif($authUser && $authUser->isReseller())
-                <a href="{{ route('reseller.dashboard') }}">Mon espace revendeur</a>
-            @else
-                <a href="{{ route('login') }}">Connexion pro</a>
-            @endif
-            <a href="{{ route('cart') }}">Mon panier</a>
-        </div>
+        @auth
+            <div class="footer-col">
+                <h3>Espace pro</h3>
+                @if($authUser->isAdmin())
+                    <a href="{{ route('admin.dashboard') }}">Tableau de bord</a>
+                @elseif($authUser->isReseller())
+                    <a href="{{ route('reseller.dashboard') }}">Mon espace revendeur</a>
+                @endif
+                <a href="{{ route('cart') }}">Mon panier</a>
+            </div>
+        @endauth
     </div>
     <div class="container footer-bottom">
         <span>© {{ date('Y') }} TECHFLEX. Tous droits réservés.</span>

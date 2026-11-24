@@ -65,7 +65,6 @@
                     <span class="eyebrow">Témoignages</span>
                     <h2>Ce que disent nos clients</h2>
                 </div>
-                <a href="{{ route('reviews') }}" class="show-link">Voir tous les avis <span aria-hidden="true">→</span></a>
             </div>
             <div class="reviews-grid">
                 @foreach($reviews as $review)
