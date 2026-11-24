@@ -18,20 +18,23 @@ Le service est déployé depuis le dépôt :
 > ⚠️ L'offre PostgreSQL gratuite de Render expire après environ **30 jours**.
 > Pour une mise en ligne définitive, prévoir un plan payant ou une base externe.
 
-> ⚠️ **Configuration transitoire en cours** : `APP_KEY` est encore dans le dépôt
-> et le compte administrateur de démonstration (`admin@techflex.test` /
-> `password`) reste actif tant que les secrets Render ne sont pas posés.
-> Les photos et le catalogue sont déjà ceux du site localhost.
+> ⚠️ **Avant le prochain déploiement** : renseigner les secrets `APP_KEY`,
+> `TECHFLEX_ADMIN_PASSWORD` et `MAIL_PASSWORD` dans le dashboard Render. Le
+> blueprint `render.yaml` ne contient plus l'ancienne clé Laravel ni l'ancien
+> mot de passe admin. Les photos et le catalogue sont déjà ceux du site localhost.
 
 ## Première configuration
 
 1. Ouvre https://render.com/deploy?repo=https://github.com/juniorhounsou673-sketch/techflex
 2. Vérifie le nom `techflex-boutique`, le plan **Free** et la base `techflex-db`.
 3. Renseigne les variables secrètes demandées (`sync: false`) :
-   - `APP_KEY` : clé Laravel au format `base64:` (générée avec `php artisan key:generate`).
-   - `TECHFLEX_ADMIN_EMAIL` : email de votre compte administrateur.
+   - `APP_KEY` : **nouvelle** clé Laravel au format `base64:` (générée avec
+     `php artisan key:generate` ; ne jamais réutiliser celle qui était dans Git).
    - `TECHFLEX_ADMIN_PASSWORD` : mot de passe solide, jamais `password`.
-4. Clique sur **Apply**.
+     L'email admin est déjà posé : `techflex79@gmail.com`.
+   - `MAIL_PASSWORD` : clé SMTP Brevo actuelle (`xsmtpsib-...`), inchangée.
+4. Clique sur **Apply**. La base PostgreSQL `techflex-db` est créée par le
+   blueprint et ses données survivent aux redéploiements.
 
 Render construit l'image Docker, crée la base PostgreSQL, lance les migrations,
 puis le seeder idempotent. Le seeder restaure **le catalogue et les photos
@@ -96,7 +99,9 @@ Le catalogue de départ n'est jamais réinitialisé (`firstOrCreate` dans le see
   « Generate » de Render (valeur incompatible avec Laravel).
 - `APP_URL` : posée dans `render.yaml`, remplacée automatiquement par
   `RENDER_EXTERNAL_URL` au démarrage.
-- `DATABASE_URL` : fournie automatiquement par `techflex-db` via `render.yaml`.
+- `DB_URL` : chaîne de connexion fournie automatiquement par `techflex-db` via
+  `render.yaml` ; `DB_CONNECTION=pgsql` et `DB_SSLMODE=require` sont posés en
+  conséquence.
 - `TECHFLEX_DELIVERY_PHONE` : numéro WhatsApp unique qui reçoit les demandes de
   livraison. Remplace `22900000000` par votre vrai numéro avec indicatif.
 - `TECHFLEX_MOMO_SIMULATION=true` : aucun paiement réel n'est effectué tant que
