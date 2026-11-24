@@ -11,7 +11,6 @@
             <p>Des pièces choisies pour leur style et leur qualité. Payez par MoMo ou à la livraison, et recevez votre commande au jour et à l'heure de votre choix.</p>
             <div class="hero-actions">
                 <a href="#collections" class="btn btn-gold">Découvrir la sélection</a>
-                <a href="{{ route('direct') }}" class="btn btn-ghost">Acheter en direct</a>
             </div>
             <div class="hero-notes">
                 <span>Livraison au créneau choisi</span>
