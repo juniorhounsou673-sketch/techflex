@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Reseller;
 use App\Models\ResellerSettlement;
 use App\Models\User;
+use App\Notifications\ResellerAccountBlocked;
+use App\Notifications\ResellerAccountUnblocked;
 use App\Notifications\ResellerInvitation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -63,8 +66,10 @@ class ResellerController extends Controller
         $invitation = $this->sendInvitation($reseller->user);
         $message = "Accès créé pour {$reseller->user->name}. ";
         $message .= $invitation['sent']
-            ? "Un email d'invitation lui a été envoyé pour définir son mot de passe. Lien de vente : " . url('/r/' . $reseller->code)
-            : "Email non livré (service mail à configurer). Transmettez ce lien au revendeur : {$invitation['url']}";
+            ? "Email d'activation envoyé à {$reseller->user->email}. "
+            : 'Email non livré (service mail à configurer). ';
+        $message .= "Lien d'activation à transmettre si besoin : {$invitation['url']} ";
+        $message .= '· Lien de vente : '.url('/r/'.$reseller->code);
 
         return redirect()->route('admin.resellers.index')
             ->with($invitation['sent'] ? 'success' : 'error', $message);
@@ -87,9 +92,8 @@ class ResellerController extends Controller
 
         return back()->with(
             $invitation['sent'] ? 'success' : 'error',
-            $invitation['sent']
-                ? "Nouvelle invitation envoyée à {$user->email}."
-                : "Email non livré. Transmettez ce lien au revendeur : {$invitation['url']}"
+            ($invitation['sent'] ? "Nouvelle invitation envoyée à {$user->email}. " : 'Email non livré. ')
+            ."Lien d'activation à transmettre si besoin : {$invitation['url']}"
         );
     }
 
@@ -127,7 +131,15 @@ class ResellerController extends Controller
     {
         $request->validate(['reason' => 'nullable|string|max:190']);
 
-        $reseller->block($request->input('reason'));
+        $reason = $request->input('reason');
+        $reseller->block($reason);
+
+        $this->notifyStatusChange($reseller, new ResellerAccountBlocked(
+            resellerName: $reseller->user->name,
+            resellerCode: $reseller->code,
+            reason: $reason,
+            blockedAt: now()->translatedFormat('d/m/Y à H:i'),
+        ));
 
         return back()->with('success', "{$reseller->user->name} est bloqué. Il n'a plus accès à rien.");
     }
@@ -136,7 +148,23 @@ class ResellerController extends Controller
     {
         $reseller->unblock();
 
+        $this->notifyStatusChange($reseller, new ResellerAccountUnblocked(
+            resellerName: $reseller->user->name,
+            resellerCode: $reseller->code,
+            unblockedAt: now()->translatedFormat('d/m/Y à H:i'),
+        ));
+
         return back()->with('success', "{$reseller->user->name} est réactivé.");
+    }
+
+    /** Alerte l'admin et le revendeur concerné ; l'email est envoyé via la file d'attente. */
+    private function notifyStatusChange(Reseller $reseller, object $notification): void
+    {
+        $recipients = User::query()
+            ->where(fn ($query) => $query->where('role', 'admin')->orWhere('id', $reseller->user_id))
+            ->get();
+
+        Notification::send($recipients, $notification);
     }
 
     /** Compte d'un revendeur : ventes, gains, soldes dans les deux sens, versements. */
@@ -200,7 +228,7 @@ class ResellerController extends Controller
         $n = (int) Reseller::max('id') + 1;
 
         do {
-            $code = 'REV' . str_pad((string) $n, 3, '0', STR_PAD_LEFT);
+            $code = 'REV'.str_pad((string) $n, 3, '0', STR_PAD_LEFT);
             $n++;
         } while (Reseller::where('code', $code)->exists());
 

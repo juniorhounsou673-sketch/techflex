@@ -25,7 +25,7 @@ class ResellerInvitation extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Votre accès revendeur TECHFLEX')
+            ->subject('Bienvenue dans l’équipe TECHFLEX — activez votre compte')
             ->markdown('emails.reseller-invitation', [
                 'user' => $notifiable,
                 'url' => $this->url,

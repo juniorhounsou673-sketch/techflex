@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\EnsureUserHasRole;
+use App\Http\Middleware\EnsureUserIsActive;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,12 +15,27 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-                $middleware->alias([
-            'role' => \App\Http\Middleware\EnsureUserHasRole::class,
-            'active' => \App\Http\Middleware\EnsureUserIsActive::class,
+        $middleware->alias([
+            'role' => EnsureUserHasRole::class,
+            'active' => EnsureUserIsActive::class,
         ]);
 
-        $middleware->appendToGroup('web', \App\Http\Middleware\EnsureUserIsActive::class);
+        $middleware->appendToGroup('web', EnsureUserIsActive::class);
+    })
+    ->withSchedule(function (Schedule $schedule): void {
+        $schedule->command('techflex:send-top weekly')
+            ->weeklyOn(1, '08:00')
+            ->timezone('Africa/Porto-Novo')
+            ->environments(['production'])
+            ->withoutOverlapping(180)
+            ->onOneServer();
+
+        $schedule->command('techflex:send-top monthly')
+            ->monthlyOn(1, '09:00')
+            ->timezone('Africa/Porto-Novo')
+            ->environments(['production'])
+            ->withoutOverlapping(180)
+            ->onOneServer();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

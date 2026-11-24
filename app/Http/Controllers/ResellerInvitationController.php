@@ -13,6 +13,16 @@ class ResellerInvitationController extends Controller
     {
         $user = $this->findInvitedUser($token);
 
+        return view('reseller.activate', [
+            'user' => $user,
+            'token' => $token,
+        ]);
+    }
+
+    public function activate(string $token)
+    {
+        $user = $this->findInvitedUser($token);
+
         return view('reseller.invitation', [
             'user' => $user,
             'token' => $token,
@@ -42,7 +52,8 @@ class ResellerInvitationController extends Controller
         $request->session()->regenerate();
 
         return redirect()->route('reseller.dashboard')
-            ->with('success', 'Bienvenue ' . $user->name . ' ! Votre espace revendeur est prêt.');
+            ->with('welcome', true)
+            ->with('success', 'Votre accès revendeur est activé.');
     }
 
     private function findInvitedUser(string $token): User

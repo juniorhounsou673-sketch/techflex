@@ -11,9 +11,9 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Reseller\DashboardController as ResellerDashboardController;
 use App\Http\Controllers\ResellerInvitationController;
 use App\Http\Controllers\ReviewController;
-use App\Http\Controllers\Reseller\DashboardController as ResellerDashboardController;
 use Illuminate\Support\Facades\Route;
 
 // ---------- Boutique publique ----------
@@ -43,8 +43,9 @@ Route::prefix('commande/{reference}')->name('order.')->group(function () {
     Route::post('/livraison', [OrderController::class, 'deliveryStore'])->name('delivery.store');
 });
 
-// Invitation revendeur : le revendeur choisit lui-même son mot de passe
+// Invitation revendeur : activation en deux étapes, puis choix du mot de passe
 Route::get('/invitation/{token}', [ResellerInvitationController::class, 'show'])->name('reseller.invitation.show');
+Route::get('/invitation/{token}/activer', [ResellerInvitationController::class, 'activate'])->name('reseller.invitation.activate');
 Route::post('/invitation/{token}', [ResellerInvitationController::class, 'store'])->name('reseller.invitation.store');
 
 // Avis clients

@@ -7,6 +7,13 @@
     <div class="container">
         <div class="showcase-head"><h1>Bonjour {{ $reseller->user->name }}</h1></div>
 
+        @if(session('welcome'))
+            <div class="panel" style="text-align:center; margin-bottom:24px">
+                <h2>BIENVENUE DANS L’ÉQUIPE DE TECHFLEX !</h2>
+                <p class="muted">Votre espace revendeur est activé. Partagez votre lien de vente et commencez à vendre.</p>
+            </div>
+        @endif
+
         <div class="panel">
             <strong>Votre lien de vente</strong>
             <p><code>{{ $link }}</code></p>

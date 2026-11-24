@@ -1,12 +1,15 @@
 <x-mail::message>
-# Bonjour {{ $user->name }},
+# BIENVENUE DANS L’ÉQUIPE DE TECHFLEX !
 
-TECHFLEX vous donne accès à votre espace revendeur. Cliquez sur le bouton ci-dessous
-pour **définir vous-même votre mot de passe**, puis commencer à vendre.
+Bonjour {{ $user->name }},
+
+TECHFLEX vous donne accès à votre espace revendeur. Cliquez sur **Activer mon compte**, choisissez votre mot de passe, puis entrez directement dans votre espace.
 
 <x-mail::button :url="$url">
-Définir mon mot de passe
+Activer mon compte
 </x-mail::button>
+
+Votre espace revendeur est aussi accessible depuis [l’espace pro]({{ url('/connexion') }}) avec l’email de cette invitation et le mot de passe que vous aurez choisi.
 
 Ce lien est valable {{ $days }} jours et ne peut être utilisé qu'une seule fois.
 Si vous n'êtes pas à l'origine de cette invitation, ignorez cet email.

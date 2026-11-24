@@ -54,4 +54,5 @@ CMD APP_URL="$(echo "${RENDER_EXTERNAL_URL:-https://techflex-boutique.onrender.c
     (php artisan storage:link || true) && \
     php artisan optimize && \
     (php artisan queue:work --tries=3 --timeout=90 --sleep=3 >/dev/null 2>&1 &) && \
+    (php artisan schedule:work >/dev/null 2>&1 &) && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-8080}

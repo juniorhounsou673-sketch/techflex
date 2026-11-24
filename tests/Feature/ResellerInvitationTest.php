@@ -31,7 +31,9 @@ class ResellerInvitationTest extends TestCase
             'phone' => '+229 01 23 45 67',
             'momo_number' => '22901234567',
             'code' => 'REV900',
-        ])->assertRedirect(route('admin.resellers.index'));
+        ])
+            ->assertRedirect(route('admin.resellers.index'))
+            ->assertSessionHas('success', fn (string $message): bool => str_contains($message, '/invitation/'));
 
         $invited = User::where('email', 'nouveau@techflex.test')->firstOrFail();
         $this->assertNull($invited->password_set_at);
@@ -60,7 +62,16 @@ class ResellerInvitationTest extends TestCase
             return str_contains($url, '/invitation/');
         });
 
-        $this->get($url)->assertOk()->assertSee('Définir mon mot de passe');
+        $html = (new ResellerInvitation($url, 7))->toMail($invited)->render();
+        $this->assertStringContainsString('Activer mon compte', $html);
+        $this->assertStringContainsString($url, $html);
+
+        $this->get($url)
+            ->assertOk()
+            ->assertSee('BIENVENUE DANS L’ÉQUIPE DE TECHFLEX !')
+            ->assertSee('Activer mon compte');
+
+        $this->get($url.'/activer')->assertOk()->assertSee('Définir mon mot de passe');
 
         $this->post($url, [
             'password' => 'MonMotDePasse123!',
@@ -68,7 +79,9 @@ class ResellerInvitationTest extends TestCase
         ])->assertRedirect(route('reseller.dashboard'));
 
         $this->assertAuthenticatedAs($invited->fresh());
-        $this->get('/revendeur')->assertOk();
+        $this->get('/revendeur')
+            ->assertOk()
+            ->assertSee('BIENVENUE DANS L’ÉQUIPE DE TECHFLEX !');
         $this->assertNotNull($invited->fresh()->password_set_at);
         $this->assertNull($invited->fresh()->invitation_token);
 

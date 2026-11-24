@@ -47,15 +47,45 @@ n'est utilisée.
 3. Va dans **Revendeurs → Donner accès à un revendeur**.
 4. Renseigne le nom, l'email, le téléphone, le numéro MoMo et éventuellement le code.
    **Vous ne définissez aucun mot de passe**.
-5. Un email d'invitation est envoyé au revendeur. En cliquant sur le bouton, il
-   arrive sur une page où il choisit **lui-même** son mot de passe, puis est
-   connecté directement à son espace `/revendeur`.
-6. Le lien `/r/CODE` affiché dans la liste des revendeurs est son lien de vente
-   client. Si l'email n'arrive pas, cliquez sur **Renvoyer l'invitation**.
+5. Un email d'invitation est envoyé au revendeur. Le message contient un bouton
+   **Activer mon compte** : le revendeur arrive sur une page d'accueil, clique sur
+   **Activer mon compte**, choisit **lui-même** son mot de passe, puis entre
+   directement dans son espace `/revendeur` avec le message
+   **BIENVENUE DANS L'EQUIPE DE TECHFLEX !**.
+6. Le message de confirmation affiché à l'admin contient toujours le **lien
+   d'activation** : copiez-le et transmettez-le au revendeur (WhatsApp, SMS...)
+   si son email n'arrive pas. Le lien `/r/CODE` de la liste des revendeurs est
+   son lien de vente client. Si nécessaire, cliquez sur **Renvoyer
+   l'invitation** pour générer un lien neuf.
 
 Le lien d'invitation expire après 7 jours et devient invalide dès que le mot de
 passe est défini. Tant que l'invitation n'est pas acceptée, le revendeur ne peut
 pas se connecter.
+
+## Emails automatiques
+
+- **Blocage / déblocage** : l'admin et le revendeur concerné reçoivent un email
+  dès qu'un compte est bloqué ou réactivé (motif et date inclus).
+- **Tops produits et revendeurs** : un email est envoyé chaque **lundi à 08:00**
+  (semaine précédente) et le **1er de chaque mois à 09:00** (mois précédent),
+  fuseau **Africa/Porto-Novo**, à l'admin et aux revendeurs actifs.
+- Commandes utiles :
+
+```bash
+php artisan techflex:send-top weekly
+php artisan techflex:send-top monthly
+```
+
+Le planificateur Laravel (`schedule:work`) est démarré par le `Dockerfile`, comme
+le worker de file d'attente. Sur le plan gratuit Render, le service se met en
+veille après une période d'inactivité : les envois planifiés ne sont donc pas
+garantis à l'heure. Utilisez les commandes ci-dessus depuis le Shell Render si
+besoin, ou prévoyez un Cron Render / un service toujours actif pour un envoi
+strictement ponctuel.
+
+⚠️ Ces emails passent par Brevo. Tant que le support Brevo n'a pas activé
+l'envoi transactionnel, les messages restent au statut **Queued** et ne sont
+pas livrés, même si le code et la file d'attente fonctionnent.
 
 Les données saisies restent dans PostgreSQL : elles survivent aux redéploiements.
 Le catalogue de départ n'est jamais réinitialisé (`firstOrCreate` dans le seeder).
